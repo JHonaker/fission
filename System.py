@@ -1,0 +1,21 @@
+from abc import ABC, abstractmethod
+
+
+class System(ABC):
+
+    def __init__(self, entityManager, systemManager, requiredComponents):
+        self._entityManager = entityManager
+        self._systemManager = systemManager
+        self._requiredComponents = requiredComponents
+
+    @property
+    def requiredComponents(self):
+        return self._requiredComponents
+
+    def components(self):
+        return(self._entityManager
+               .getAllEntitiesWithTypes(self.requiredComponents))
+
+    @abstractmethod
+    def update(self, delta):
+        pass
