@@ -2,6 +2,7 @@ class EntityManager:
 
     def __init__(self):
         self._nextID = 0
+        self._recycledIDs = []
         self._entities = []
         self._components = {}
 
@@ -14,10 +15,15 @@ class EntityManager:
         return(self._components)
 
     def createEntity(self):
-        entityID = self._nextID
-        self._entities.append(entityID)
 
-        self._nextID += 1
+        entityID = None
+        if self._recycledIDs != []:
+            entityID = self._recycledIDs.pop()
+        else:
+            entityID = self._nextID
+            self._nextID += 1
+
+        self._entities.append(entityID)
 
         return(entityID)
 
@@ -25,6 +31,7 @@ class EntityManager:
         for componentType in list(self._components.keys()):
             self.removeComponentFrom(entity, componentType)
 
+        self._recycledIDs.append(entity)
         self._entities.remove(entity)
 
     def addComponentTo(self, entity, component):
