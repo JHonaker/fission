@@ -1,3 +1,34 @@
+from abc import ABC, abstractmethod
+
+
+class Component(ABC):
+
+    def __init__(self):
+        pass
+
+
+class System(ABC):
+
+    def __init__(self, entityManager, systemManager,
+                 messageDispatcher, requiredComponents):
+        self._entityManager = entityManager
+        self._systemManager = systemManager
+        self._messageDispatcher = messageDispatcher
+        self._requiredComponents = requiredComponents
+
+    @property
+    def requiredComponents(self):
+        return self._requiredComponents
+
+    def components(self):
+        return(self._entityManager
+               .getAllEntitiesWithTypes(self.requiredComponents))
+
+    @abstractmethod
+    def update(self, delta):
+        pass
+
+
 class EntityManager:
 
     def __init__(self, messageDispatcher):
@@ -97,3 +128,53 @@ class EntityManager:
                     for entity in keys}
 
         return(entities)
+
+
+class SystemManager:
+
+    def __init__(self, entityManager):
+        self._systems = {}
+        self._entityManager = entityManager
+
+    @property
+    def systems(self):
+        return(self._systems)
+
+    def addSystem(self, system):
+        systemType = type(system)
+        self._systems[systemType] = system
+
+    def removeSystem(self, system):
+        pass
+
+    def update(self, delta):
+        for t, system in self._systems.items():
+            system.update(delta)
+
+
+class MessageDispatcher:
+
+    def __init__(self):
+        self._messageTypes = {}
+
+    def subscribe(self, messageType, callback):
+        if messageType not in self._messageTypes:
+            self._messageTypes[messageType] = [callback]
+        else:
+            self._messageTypes[messageType].append(callback)
+
+    def unsubscribe(self, messageType, callback):
+        if messageType in self._messageTypes:
+            try:
+                self._messageTypes[messageType].remove(callback)
+            except ValueError:
+                print(str(callback) +
+                      " was not subscribed to " +
+                      str(messageType))
+
+    def send(self, messageType, *args, **kargs):
+        if messageType not in self._messageTypes:
+            print("Nobody responds to " + str(messageType) + " messages")
+        else:
+            for callback in self._messageTypes[messageType]:
+                callback(*args, **kargs)
