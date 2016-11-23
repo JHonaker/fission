@@ -1,10 +1,12 @@
 class EntityManager:
 
-    def __init__(self):
+    def __init__(self, messageDispatcher):
         self._nextID = 0
         self._recycledIDs = []
         self._entities = []
         self._components = {}
+
+        self._messageDispatcher = messageDispatcher
 
     @property
     def entities(self):
@@ -15,17 +17,16 @@ class EntityManager:
         return(self._components)
 
     def createEntity(self):
-
-        entityID = None
+        entity = None
         if self._recycledIDs != []:
-            entityID = self._recycledIDs.pop()
+            entity = self._recycledIDs.pop()
         else:
-            entityID = self._nextID
+            entity = self._nextID
             self._nextID += 1
 
-        self._entities.append(entityID)
-
-        return(entityID)
+        self._entities.append(entity)
+        self._messageDispatcher.send("entityCreated", entity)
+        return(entity)
 
     def removeEntity(self, entity):
         for componentType in list(self._components.keys()):
@@ -33,6 +34,7 @@ class EntityManager:
 
         self._recycledIDs.append(entity)
         self._entities.remove(entity)
+        self._messageDispatcher.send("entityRemoved", entity)
 
     def addComponentTo(self, entity, component):
         componentType = type(component)

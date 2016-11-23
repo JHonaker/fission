@@ -3,9 +3,10 @@ from abc import ABC, abstractmethod
 
 class System(ABC):
 
-    def __init__(self, entityManager, systemManager, requiredComponents):
+    def __init__(self, entityManager, systemManager, messageDispatcher, requiredComponents):
         self._entityManager = entityManager
         self._systemManager = systemManager
+        self._messageDispatcher = messageDispatcher
         self._requiredComponents = requiredComponents
 
     @property
